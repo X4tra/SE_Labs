@@ -5,14 +5,18 @@ class ThermostatController:
         self.current_state = "IDLE"
 
     def evaluate(self, current_temp: float) -> str:
-        if current_temp <= (self.target - self.hysteresis):
+        is_too_cold = current_temp <= (self.target - self.hysteresis)
+        is_too_hot = current_temp >= (self.target + self.hysteresis)
+        target_reached_from_below = current_temp >= self.target
+        target_reached_from_above = current_temp <= self.target
+
+        if self.current_state == "HEATING" and target_reached_from_below:
+            self.current_state = "IDLE"
+        elif self.current_state == "COOLING" and target_reached_from_above:
+            self.current_state = "IDLE"
+        elif is_too_cold:
             self.current_state = "HEATING"
-        elif self.current_state == "HEATING" and current_temp >= self.target:
-            self.current_state = "IDLE"
-            
-        elif current_temp >= (self.target + self.hysteresis):
+        elif is_too_hot:
             self.current_state = "COOLING"
-        elif self.current_state == "COOLING" and current_temp <= self.target:
-            self.current_state = "IDLE"
 
         return self.current_state
